@@ -171,6 +171,13 @@ export const App: React.FC = () => {
                 Contrast
               </button>
 
+              {highlightedSelector && (
+                <div className="ml-2 flex items-center gap-1.5 bg-indigo-950/50 border border-indigo-500/30 text-indigo-200 px-2.5 py-1 rounded-md text-[10px] font-mono">
+                  <Crosshair className="w-3 h-3 text-indigo-400" />
+                  Target: {highlightedSelector}
+                </div>
+              )}
+
               {/* Dev-only debug button for manual staging verification */}
               {import.meta.env.DEV && (
                 <button
@@ -199,13 +206,7 @@ export const App: React.FC = () => {
               </div>
             )}
 
-            {/* Target Crosshair Badge */}
-            {highlightedSelector && (
-              <div className="absolute top-12 right-3 z-30 flex items-center gap-1.5 bg-indigo-950/90 border border-indigo-500/60 text-indigo-200 px-3 py-1 rounded-full text-xs font-mono shadow-lg backdrop-blur-md">
-                <Crosshair className="w-3 h-3 text-indigo-400 animate-spin" />
-                <span className="font-semibold text-[11px]">Target: {highlightedSelector}</span>
-              </div>
-            )}
+
             
             <div className="flex-1 min-h-0 overflow-y-auto p-4 flex flex-col justify-center mt-6">
               <Fixtures
