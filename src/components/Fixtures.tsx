@@ -118,7 +118,7 @@ export const Fixtures: React.FC<FixturesProps> = ({ activeFixture, appliedPatche
       {/* FIXTURE 2: Silent Combobox */}
       {activeFixture === 'combobox' && (
         <div className="max-w-xs w-full mx-auto py-6">
-          <label className="block text-xs font-semibold tracking-wide uppercase text-zinc-400 mb-2">Assigned Reviewer</label>
+          <label className="block text-xs font-semibold tracking-wide uppercase text-zinc-400 mb-2">Test Dropdown</label>
           {/* Broken: div clicker without role="combobox", aria-expanded, tabindex="0" */}
           <div
             id="custom-combobox"
@@ -135,7 +135,7 @@ export const Fixtures: React.FC<FixturesProps> = ({ activeFixture, appliedPatche
 
           {isOpen && (
             <div id="combobox-options" className="mt-2 bg-[#121522] border border-white/15 rounded-xl shadow-2xl overflow-hidden divide-y divide-white/5">
-              {['Sarah Drasner', 'Ilya Grigorik', 'Justin Rushing'].map((name) => (
+              {['Option 1', 'Option 2', 'Option 3'].map((name) => (
                 <div
                   key={name}
                   onClick={() => { setSelectedItem(name); setIsOpen(false); }}
