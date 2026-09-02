@@ -169,6 +169,23 @@ export const App: React.FC = () => {
                 <Eye className="w-3 h-3" />
                 Contrast
               </button>
+
+              {/* Dev-only debug button for manual staging verification */}
+              {import.meta.env.DEV && (
+                <button
+                  onClick={() => {
+                    useA11yStore.getState().stagePatch({
+                      id: 'debug-patch-123',
+                      selector: '#contrast-fail-text',
+                      attributes: { role: 'button', 'aria-label': 'debug' }
+                    });
+                  }}
+                  className="px-3 py-1 ml-2 rounded-md text-xs font-semibold bg-rose-900/40 text-rose-300 border border-rose-500/30 hover:bg-rose-800/60 transition flex items-center gap-1.5 focus:outline-none"
+                >
+                  <Code2 className="w-3 h-3" />
+                  Debug: Stage Patch
+                </button>
+              )}
             </div>
           </div>
 
