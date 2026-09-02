@@ -159,8 +159,8 @@ export const Fixtures: React.FC<FixturesProps> = ({ activeFixture, appliedPatche
               <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Standard Tier</span>
               <span className="text-[10px] text-rose-400 bg-rose-950/60 border border-rose-800/40 px-2 py-0.5 rounded font-mono font-bold">FAIL AA</span>
             </div>
-            {/* Low contrast color #525d7a on #10131d gives ~2.3:1 ratio */}
-            <p id="contrast-fail-text" className="text-[#525d7a] text-xs font-medium my-3 leading-relaxed" {...getDynamicProps('#contrast-fail-text')}>
+            {/* Low contrast color #485060 on #10131d gives exactly 2.3:1 ratio */}
+            <p id="contrast-fail-text" className="text-[#485060] text-xs font-medium my-3 leading-relaxed" {...getDynamicProps('#contrast-fail-text')}>
               High-frequency metrics analysis with basic trace sampling and uncompressed storage retention.
             </p>
             <div className="pt-3 border-t border-white/5 flex items-center justify-between text-[10px] font-mono text-zinc-500">
