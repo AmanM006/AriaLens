@@ -16,12 +16,12 @@ export function registerDiagnosticTools() {
       additionalProperties: false
     },
     annotations: { readOnlyHint: true, untrustedContentHint: true },
-    execute: async (input: any, { signal }: { signal: AbortSignal }) => {
-      signal.throwIfAborted();
+    execute: async (input: any, options?: { signal?: AbortSignal }) => {
+      options?.signal?.throwIfAborted();
       logTool('audit_accessibility_tree', input);
       useA11yStore.getState().setEpochConflict(false);
       useA11yStore.getState().setHighlight(input.selector || '#fixture-container');
-      const results = await A11yEngine.auditSubtree(input.selector || '#fixture-container', signal);
+      const results = await A11yEngine.auditSubtree(input.selector || '#fixture-container', options?.signal);
       return { epoch: getEpoch(), results };
     }
   });
@@ -37,8 +37,8 @@ export function registerDiagnosticTools() {
       additionalProperties: false
     },
     annotations: { readOnlyHint: true, untrustedContentHint: false },
-    execute: async (input: any, { signal }: { signal: AbortSignal }) => {
-      signal.throwIfAborted();
+    execute: async (input: any, options?: { signal?: AbortSignal }) => {
+      options?.signal?.throwIfAborted();
       logTool('trace_keyboard_trap', input);
       useA11yStore.getState().setHighlight(input.containerSelector);
       return { epoch: getEpoch(), ...A11yEngine.traceFocusTrap(input.containerSelector) };
@@ -56,8 +56,8 @@ export function registerDiagnosticTools() {
       additionalProperties: false
     },
     annotations: { readOnlyHint: true, untrustedContentHint: true },
-    execute: async (input: any, { signal }: { signal: AbortSignal }) => {
-      signal.throwIfAborted();
+    execute: async (input: any, options?: { signal?: AbortSignal }) => {
+      options?.signal?.throwIfAborted();
       logTool('check_contrast_ratios', input);
       useA11yStore.getState().setHighlight(input.selector);
       return { epoch: getEpoch(), ...A11yEngine.getContrastRatio(input.selector) };
@@ -78,8 +78,8 @@ export function registerDiagnosticTools() {
       additionalProperties: false
     },
     annotations: { readOnlyHint: true, untrustedContentHint: true },
-    execute: async (input: any, { signal }: { signal: AbortSignal }) => {
-      signal.throwIfAborted();
+    execute: async (input: any, options?: { signal?: AbortSignal }) => {
+      options?.signal?.throwIfAborted();
       logTool('preview_screen_reader', input);
       const text = input.mode === 'staged' ? 'Dialog: Confirm Action. Cancel button. Delete Item button.' : 'Unlabeled container, clickable item.';
       const spokenText = await A11yEngine.speakScreenReaderOutput(text);
@@ -104,8 +104,8 @@ export function registerStagingTool() {
       additionalProperties: false
     },
     annotations: { readOnlyHint: false, untrustedContentHint: false },
-    execute: async (input: any, { signal }: { signal: AbortSignal }) => {
-      signal.throwIfAborted();
+    execute: async (input: any, options?: { signal?: AbortSignal }) => {
+      options?.signal?.throwIfAborted();
       logTool('stage_aria_remediation', input);
 
       const state = useA11yStore.getState();
