@@ -1,4 +1,4 @@
-# AriaLens
+ï»¿# AriaLens
 
 > **Agent-Native Live Accessibility & Screen-Reader Remediation Studio**  
 > *Built for The WebMCP Challenge (OpenAI x W3C WebMCP Hackathon)*
@@ -10,7 +10,7 @@
 
 ---
 
-## ?? Executive Summary
+## Executive Summary
 
 Server-side AI coding agents fail catastrophically at web accessibility. When inspecting static HTML/JSX ASTs, LLMs hallucinate ARIA tags, miscalculate contrast ratios across layered alpha-blended CSS backgrounds, and cannot verify whether a modal actually traps keyboard focus or leaks to background content.
 
@@ -18,62 +18,62 @@ Server-side AI coding agents fail catastrophically at web accessibility. When in
 
 ---
 
-## ?? Why WebMCP? (The Runtime-Exclusivity Principle)
+## Why WebMCP? (The Runtime-Exclusivity Principle)
 
 Remote backend MCP servers structurally **cannot** perform high-consequence accessibility remediation:
 
 1. **Live AccName 1.1 Computation**: Accessible names depend on live computed styles, `aria-labelledby` reference chains, and hidden visibility states that do not exist in static source files.
 2. **True Visual Contrast Calculation**: CSS class names do not reveal real rendered contrast. AriaLens measures live computed styles (`window.getComputedStyle`) accounting for alpha-blended parent stacks and fallbacks against the WCAG relative luminance formula:
    $$\text{Ratio} = \frac{L_1 + 0.05}{L_2 + 0.05}$$
-3. **Runtime Focus-Trap Simulation**: Keyboard trapping cannot be guessed from markup—it requires testing tab-traversal loops against non-inert background nodes.
+3. **Runtime Focus-Trap Simulation**: Keyboard trapping cannot be guessed from markupâ€”it requires testing tab-traversal loops against non-inert background nodes.
 4. **Auditory Proof via Web Speech API**: AriaLens uses native `window.speechSynthesis` so the agent and user can literally *hear* the acoustic difference between a broken element and a staged ARIA remediation before committing any DOM mutation.
 
 ---
 
-## ??? Spec-Native Security & Architecture
+## Spec-Native Security & Architecture
 
 AriaLens implements the deepest edges of the **W3C WebMCP draft specification**, specifically addressing the security and lifecycle vectors outlined in **Section 6**:
 
 ```
 +-----------------------------------------------------------------------------+
-¦                             AI AGENT (LLM)                                  ¦
-+---------------?-------------------------------------------------------------+
-                ¦ WebMCP Protocol                             ¦
-                ?                                             ?
+|                             AI AGENT (LLM)                                  |
++-----------------------------------------------------------------------------+
+                | WebMCP Protocol                             |
+                v                                             v
 +--------------------------------------+     +--------------------------------+
-¦        Diagnostic Read Tools         ¦     ¦     Staging Mutation Tool      ¦
-¦  (untrustedContentHint: true/false)  ¦     ¦   (readOnlyHint: false)        ¦
-¦  - audit_accessibility_tree          ¦     ¦   - stage_aria_remediation    ¦
-¦  - trace_keyboard_trap               ¦     +--------------------------------+
-¦  - check_contrast_ratios             ¦                      ¦
-¦  - preview_screen_reader             ¦                      ?
-+--------------------------------------+     +--------------------------------+
-                    ¦                        ¦       Virtual Staged Layer     ¦
-                    ?                        +--------------------------------+
-+--------------------------------------+                      ¦
-¦        Live Browser Runtime          ¦                      ?
-¦  - axe-core WCAG 2.2 engine          ¦     +--------------------------------+
-¦  - Computed Style & Luminance        ¦     ¦    Human Authority Boundary    ¦
-¦  - window.speechSynthesis Audio      ¦     ¦      (HITL Approval Gate)      ¦
-¦  - Active Tab Sequence Walking       ¦     +--------------------------------+
-+--------------------------------------+                      ¦
-                                                              ¦ Human Click: "Approve"
-                                                              ?
+|        Diagnostic Read Tools         |     |     Staging Mutation Tool      |
+|  (untrustedContentHint: true/false)  |     |   (readOnlyHint: false)        |
+|  - audit_accessibility_tree          |     |   - stage_aria_remediation     |
+|  - trace_keyboard_trap               |     +----------------+---------------+
+|  - check_contrast_ratios             |                      |
+|  - preview_screen_reader             |                      v
++-------------------+------------------+     +--------------------------------+
+                    |                        |       Virtual Staged Layer     |
+                    v                        +----------------+---------------+
++--------------------------------------+                      |
+|        Live Browser Runtime          |                      v
+|  - axe-core WCAG 2.2 engine          |     +--------------------------------+
+|  - Computed Style & Luminance        |     |    Human Authority Boundary    |
+|  - window.speechSynthesis Audio      |     |      (HITL Approval Gate)      |
+|  - Active Tab Sequence Walking       |     +----------------+---------------+
++--------------------------------------+                      |
+                                                              | Human Click: "Approve"
+                                                              v
                                              +--------------------------------+
-                                             ¦ Ephemeral Commit Tool Mounted  ¦
-                                             ¦   - commit_a11y_fix            ¦
-                                             ¦   (Single-use AbortController) ¦
-                                             ¦   (Optimistic Epoch Locking)   ¦
+                                             | Ephemeral Commit Tool Mounted  |
+                                             |   - commit_a11y_fix            |
+                                             |   (Single-use AbortController) |
+                                             |   (Optimistic Epoch Locking)   |
+                                             +----------------+---------------+
+                                                              |
+                                                              v Live DOM Mutated
                                              +--------------------------------+
-                                                              ¦
-                                                              ? Live DOM Mutated
-                                             +--------------------------------+
-                                             ¦ State Epoch Bumped (epoch + 1) ¦
-                                             ¦ Tool Automatically Unmounted   ¦
+                                             | State Epoch Bumped (epoch + 1) |
+                                             | Tool Automatically Unmounted   |
                                              +--------------------------------+
 ```
 
-### 1. §6.4.3 Untrusted Content Mitigation
+### 1. Section 6.4.3 Untrusted Content Mitigation
 Any diagnostic tool reading user-generated DOM content (`audit_accessibility_tree`, `preview_screen_reader`) explicitly declares:
 ```typescript
 annotations: {
@@ -83,7 +83,7 @@ annotations: {
 ```
 This instructs the agent runtime to treat retrieved values as untrusted strings, neutralizing indirect prompt injection attacks.
 
-### 2. §6.3.2.3 Ambiguous Finalization & Ephemeral Tooling
+### 2. Section 6.3.2.3 Ambiguous Finalization & Ephemeral Tooling
 Mutating the live DOM is high-consequence. The destructive `commit_a11y_fix` tool is **never exposed upfront** in `document.modelContext`. Instead:
 - The agent calls `stage_aria_remediation` to propose a patch.
 - The UI renders the staged attributes in the **Authority Boundary** tray.
@@ -104,7 +104,7 @@ if (state.currentEpoch !== input.expectedEpoch) {
 
 ---
 
-## ?? WebMCP Tool Catalog
+## WebMCP Tool Catalog
 
 | Tool Name | Type | Spec Annotations | Description |
 | :--- | :---: | :---: | :--- |
@@ -117,7 +117,7 @@ if (state.currentEpoch !== input.expectedEpoch) {
 
 ---
 
-## ? 60-Second Judging Reproduction Fixtures
+## 60-Second Judging Reproduction Fixtures
 
 AriaLens includes three deterministic 1-click test fixtures designed for rapid hackathon evaluation:
 
@@ -133,7 +133,7 @@ AriaLens includes three deterministic 1-click test fixtures designed for rapid h
 
 ---
 
-## ?? Quickstart
+## Quickstart
 
 ### Prerequisites
 - Node.js 18+
@@ -151,7 +151,7 @@ npm install
 # 3. Start local development server
 npm run dev
 ```
-Open **[http://localhost:5173](http://localhost:5173)** in your browser.
+Open **http://localhost:5173** in your browser.
 
 ### Verification Suite
 ```bash
@@ -164,44 +164,44 @@ npm run build
 
 ---
 
-## ?? Repository Structure
+## Repository Structure
 
 ```
 AriaLens/
-+-- src/
-¦   +-- components/
-¦   ¦   +-- Fixtures.tsx         # Deterministic broken UI targets (Modal, Combobox, Contrast)
-¦   +-- lib/
-¦   ¦   +-- a11y/
-¦   ¦   ¦   +-- engine.ts        # axe-core evaluator, WCAG luminance math, focus tracer & SpeechSynthesis
-¦   ¦   +-- webmcp/
-¦   ¦       +-- registry.ts      # Dynamic tool registry with AbortController lifecycle & toolchange dispatch
-¦   ¦       +-- tools.ts         # 5 W3C WebMCP tools + ephemeral single-use commit tool
-¦   +-- store/
-¦   ¦   +-- a11yStore.ts         # Zustand state engine with optimistic epoch locking & HITL staged layer
-¦   +-- types/
-¦   ¦   +-- webmcp.d.ts          # W3C Model Context protocol TypeScript definitions
-¦   +-- App.tsx                  # Production studio shell, target overlays & HITL Authority Boundary
-¦   +-- main.tsx                 # Application entry point
-+-- package.json
-+-- tailwind.config.js
-+-- tsconfig.json
-+-- vite.config.ts
+â”œâ”€â”€ src/
+â”‚   â”œâ”€â”€ components/
+â”‚   â”‚   â””â”€â”€ Fixtures.tsx         # Deterministic broken UI targets (Modal, Combobox, Contrast)
+â”‚   â”œâ”€â”€ lib/
+â”‚   â”‚   â”œâ”€â”€ a11y/
+â”‚   â”‚   â”‚   â””â”€â”€ engine.ts        # axe-core evaluator, WCAG luminance math, focus tracer & SpeechSynthesis
+â”‚   â”‚   â””â”€â”€ webmcp/
+â”‚   â”‚       â”œâ”€â”€ registry.ts      # Dynamic tool registry with AbortController lifecycle & toolchange dispatch
+â”‚   â”‚       â””â”€â”€ tools.ts         # 5 W3C WebMCP tools + ephemeral single-use commit tool
+â”‚   â”œâ”€â”€ store/
+â”‚   â”‚   â””â”€â”€ a11yStore.ts         # Zustand state engine with optimistic epoch locking & HITL staged layer
+â”‚   â”œâ”€â”€ types/
+â”‚   â”‚   â””â”€â”€ webmcp.d.ts          # W3C Model Context protocol TypeScript definitions
+â”‚   â”œâ”€â”€ App.tsx                  # Production studio shell, target overlays & HITL Authority Boundary
+â”‚   â””â”€â”€ main.tsx                 # Application entry point
+â”œâ”€â”€ package.json
+â”œâ”€â”€ tailwind.config.js
+â”œâ”€â”€ tsconfig.json
+â””â”€â”€ vite.config.ts
 ```
 
 ---
 
-## ?? Hackathon Evaluation Alignment
+## Hackathon Evaluation Alignment
 
 | Evaluation Pillar | How AriaLens Delivers |
 | :--- | :--- |
-| **Deterministic Core** | State is governed by an integer epoch counter (`currentEpoch`). AI agents never touch live state directly—mutations are staged, locked by epoch, and gated by human authorization. |
+| **Deterministic Core** | State is governed by an integer epoch counter (`currentEpoch`). AI agents never touch live state directlyâ€”mutations are staged, locked by epoch, and gated by human authorization. |
 | **Spec-Native Fidelity** | Leverages imperative `document.modelContext.registerTool`, dynamic `AbortController` unmounting, `toolchange` notifications, and strict `untrustedContentHint` / `readOnlyHint` annotations. |
 | **High-Consequence Domain** | Accessibility (WCAG 2.2 AA / Section 508 / ADA compliance) directly impacts millions of disabled users. Inaccessible apps face major legal liability and exclusion. |
 | **Zero-Latency In-Browser Execution** | Zero backend latency. Contrast math, focus-path tracing, axe-core AST audits, and speech synthesis run 100% client-side in the user's browser. |
 
 ---
 
-## ?? License
+## License
 
-MIT © 2026 Aman & AriaLens Contributors. Built with ?? for The WebMCP Challenge.
+MIT (c) 2026 Aman & AriaLens Contributors. Built for The WebMCP Challenge.

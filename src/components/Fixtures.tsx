@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, AlertTriangle, UserCheck, Shield } from 'lucide-react';
+import { ChevronDown, AlertTriangle, UserCheck, Shield, Check } from 'lucide-react';
 
 interface FixturesProps {
   activeFixture: 'none' | 'modal' | 'combobox' | 'contrast';
@@ -21,7 +21,7 @@ export const Fixtures: React.FC<FixturesProps> = ({ activeFixture, appliedPatche
         <div className="flex flex-col items-center justify-center text-center p-8 text-zinc-500">
           <Shield className="w-12 h-12 text-zinc-700 mb-3" />
           <p className="text-sm font-medium">Select a test fixture from above to mount an interactive target.</p>
-          <span className="text-xs text-zinc-600 mt-1 font-mono">Modal ? Combobox ? Contrast</span>
+          <span className="text-xs text-zinc-600 mt-1 font-mono">Modal | Combobox | Contrast</span>
         </div>
       )}
 
@@ -101,7 +101,7 @@ export const Fixtures: React.FC<FixturesProps> = ({ activeFixture, appliedPatche
                   className="p-3 hover:bg-white/5 text-xs text-zinc-200 cursor-pointer flex items-center justify-between transition"
                 >
                   <span>{name}</span>
-                  {selectedItem === name && <span className="text-indigo-400 font-bold text-xs">?</span>}
+                  {selectedItem === name && <Check className="w-3.5 h-3.5 text-indigo-400" />}
                 </div>
               ))}
             </div>
