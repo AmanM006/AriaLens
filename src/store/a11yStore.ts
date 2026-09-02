@@ -37,7 +37,7 @@ interface A11yState {
 
 export const useA11yStore = create<A11yState>((set) => ({
   currentEpoch: 1,
-  activeFixture: 'contrast',
+  activeFixture: 'combobox',
   stagedPatch: null,
   highlightedSelector: null,
   activityLog: [],

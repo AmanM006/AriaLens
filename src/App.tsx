@@ -135,18 +135,6 @@ export const App: React.FC = () => {
             
             <div className="flex items-center gap-1.5 bg-[#090b10] p-1 rounded-lg border border-white/10">
               <button
-                onClick={() => loadFixture('modal')}
-                className={`px-3 py-1 rounded-md text-xs font-semibold transition flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                  activeFixture === 'modal'
-                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-950/50'
-                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/5'
-                }`}
-              >
-                <Layers className="w-3 h-3" />
-                Modal Trap
-              </button>
-
-              <button
                 onClick={() => loadFixture('combobox')}
                 className={`px-3 py-1 rounded-md text-xs font-semibold transition flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                   activeFixture === 'combobox'
@@ -156,6 +144,18 @@ export const App: React.FC = () => {
               >
                 <ListFilter className="w-3 h-3" />
                 Combobox
+              </button>
+
+              <button
+                onClick={() => loadFixture('modal')}
+                className={`px-3 py-1 rounded-md text-xs font-semibold transition flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                  activeFixture === 'modal'
+                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-950/50'
+                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/5'
+                }`}
+              >
+                <Layers className="w-3 h-3" />
+                Modal Trap
               </button>
 
               <button
