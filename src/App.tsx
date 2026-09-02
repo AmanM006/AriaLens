@@ -15,7 +15,6 @@ import {
   ListFilter, 
   Eye, 
   Lock, 
-  Sparkles,
   ArrowRight,
   Code2
 } from 'lucide-react';
@@ -90,9 +89,8 @@ export const App: React.FC = () => {
             </div>
           </div>
           <div className="flex items-baseline gap-2">
-            <h1 className="text-base font-extrabold tracking-tight text-white flex items-center gap-1.5">
+            <h1 className="text-base font-extrabold tracking-tight text-white">
               AriaLens
-              <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
             </h1>
             <span className="text-[10px] bg-indigo-950/80 text-indigo-300 font-semibold px-2 py-0.5 rounded-full border border-indigo-800/60 font-mono">
               WebMCP Studio
