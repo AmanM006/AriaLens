@@ -29,7 +29,8 @@ export const App: React.FC = () => {
     activityLog,
     isCommitMounted,
     approvePatch,
-    clearStagedPatch
+    clearStagedPatch,
+    epochConflict
   } = useA11yStore();
 
   const [toolCount, setToolCount] = useState(5);
@@ -174,16 +175,12 @@ export const App: React.FC = () => {
               {import.meta.env.DEV && (
                 <button
                   onClick={() => {
-                    useA11yStore.getState().stagePatch({
-                      id: 'debug-patch-123',
-                      selector: '#contrast-fail-text',
-                      attributes: { role: 'button', 'aria-label': 'debug' }
-                    });
+                    useA11yStore.getState().incrementEpoch();
                   }}
                   className="px-3 py-1 ml-2 rounded-md text-xs font-semibold bg-rose-900/40 text-rose-300 border border-rose-500/30 hover:bg-rose-800/60 transition flex items-center gap-1.5 focus:outline-none"
                 >
                   <Code2 className="w-3 h-3" />
-                  Debug: Stage Patch
+                  Debug: Bump Epoch
                 </button>
               )}
             </div>
@@ -191,15 +188,26 @@ export const App: React.FC = () => {
 
           {/* Canvas Wrapper */}
           <div className="flex-1 min-h-0 relative rounded-2xl overflow-hidden border border-white/10 bg-[#06070a] shadow-2xl flex flex-col">
+            
+            {/* EPOCH CONFLICT BANNER */}
+            {epochConflict && (
+              <div className="absolute top-0 left-0 right-0 z-40 bg-rose-950/95 border-b border-rose-500/60 text-rose-200 px-4 py-2 text-xs shadow-lg backdrop-blur-md flex items-center gap-2 animate-in slide-in-from-top">
+                <ShieldAlert className="w-4 h-4 text-rose-400 flex-shrink-0" />
+                <div>
+                  <strong className="font-bold">⛔ STALE_EPOCH_CONFLICT:</strong> Human modified live DOM during agent evaluation. Mutation aborted. Agent must re-audit to proceed.
+                </div>
+              </div>
+            )}
+
             {/* Target Crosshair Badge */}
             {highlightedSelector && (
-              <div className="absolute top-3 right-3 z-30 flex items-center gap-1.5 bg-rose-950/90 border border-rose-500/60 text-rose-200 px-3 py-1 rounded-full text-xs font-mono shadow-lg backdrop-blur-md">
-                <Crosshair className="w-3 h-3 text-rose-400 animate-spin" />
+              <div className="absolute top-12 right-3 z-30 flex items-center gap-1.5 bg-indigo-950/90 border border-indigo-500/60 text-indigo-200 px-3 py-1 rounded-full text-xs font-mono shadow-lg backdrop-blur-md">
+                <Crosshair className="w-3 h-3 text-indigo-400 animate-spin" />
                 <span className="font-semibold text-[11px]">Target: {highlightedSelector}</span>
               </div>
             )}
             
-            <div className="flex-1 min-h-0 overflow-y-auto p-4 flex flex-col justify-center">
+            <div className="flex-1 min-h-0 overflow-y-auto p-4 flex flex-col justify-center mt-6">
               <Fixtures
                 activeFixture={activeFixture as 'none' | 'modal' | 'combobox' | 'contrast'}
                 appliedPatches={useA11yStore.getState().appliedPatches}

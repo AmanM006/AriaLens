@@ -22,6 +22,7 @@ interface A11yState {
   highlightedSelector: string | null;
   activityLog: ActivityLogEntry[];
   isCommitMounted: boolean;
+  epochConflict: boolean;
   appliedPatches: Record<string, Record<string, string>>;
   
   loadFixture: (fixture: FixtureType) => void;
@@ -33,6 +34,7 @@ interface A11yState {
   logActivity: (entry: Omit<ActivityLogEntry, 'timestamp'>) => void;
   approvePatch: () => void;
   setCommitUnmounted: () => void;
+  setEpochConflict: (hasConflict: boolean) => void;
 }
 
 export const useA11yStore = create<A11yState>((set) => ({
@@ -42,6 +44,7 @@ export const useA11yStore = create<A11yState>((set) => ({
   highlightedSelector: null,
   activityLog: [],
   isCommitMounted: false,
+  epochConflict: false,
   appliedPatches: {},
 
   loadFixture: (fixture) => set((state) => ({ 
@@ -82,5 +85,7 @@ export const useA11yStore = create<A11yState>((set) => ({
 
   approvePatch: () => set({ isCommitMounted: true }),
   
-  setCommitUnmounted: () => set({ isCommitMounted: false })
+  setCommitUnmounted: () => set({ isCommitMounted: false }),
+
+  setEpochConflict: (hasConflict) => set({ epochConflict: hasConflict })
 }));

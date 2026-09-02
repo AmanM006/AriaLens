@@ -5,7 +5,7 @@ import { A11yEngine } from '../a11y/engine';
 const getEpoch = () => useA11yStore.getState().currentEpoch;
 const logTool = (toolName: string, input: any) => useA11yStore.getState().logActivity({ toolName, input });
 
-export function registerCoreTools() {
+export function registerDiagnosticTools() {
   globalRegistry.register({
     name: "audit_accessibility_tree",
     title: "Audit Accessibility Tree",
@@ -19,6 +19,7 @@ export function registerCoreTools() {
     execute: async (input: any, { signal }: { signal: AbortSignal }) => {
       signal.throwIfAborted();
       logTool('audit_accessibility_tree', input);
+      useA11yStore.getState().setEpochConflict(false);
       useA11yStore.getState().setHighlight(input.selector || '#fixture-container');
       const results = await A11yEngine.auditSubtree(input.selector || '#fixture-container', signal);
       return { epoch: getEpoch(), results };
@@ -64,47 +65,6 @@ export function registerCoreTools() {
   });
 
   globalRegistry.register({
-    name: "stage_aria_remediation",
-    title: "Stage ARIA Remediation",
-    description: "Proposes accessible attribute patches to a staged virtual DOM layer.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        selector: { type: "string" },
-        attributes: { type: "object" },
-        description: { type: "string" }
-      },
-      required: ["selector", "attributes", "description"],
-      additionalProperties: false
-    },
-    annotations: { readOnlyHint: false, untrustedContentHint: false },
-    execute: async (input: any, { signal }: { signal: AbortSignal }) => {
-      signal.throwIfAborted();
-      logTool('stage_aria_remediation', input);
-
-      const allowedKeyRegex = /^(aria-|role$|tabindex$)/;
-      const safeAttributes: Record<string, string> = {};
-      
-      for (const [key, value] of Object.entries(input.attributes || {})) {
-        if (allowedKeyRegex.test(key)) {
-          safeAttributes[key] = String(value);
-        } else {
-          console.warn(`Blocked unsafe attribute injection attempt: ${key}`);
-        }
-      }
-
-      const patchId = Math.random().toString(36).substring(7);
-      useA11yStore.getState().stagePatch({
-        id: patchId,
-        selector: input.selector,
-        attributes: safeAttributes,
-        description: input.description
-      });
-      return { success: true, patchId, currentEpoch: getEpoch() };
-    }
-  });
-
-  globalRegistry.register({
     name: "preview_screen_reader",
     title: "Preview Screen Reader Output",
     description: "Generates spoken screen-reader audio via SpeechSynthesis.",
@@ -128,6 +88,65 @@ export function registerCoreTools() {
   });
 }
 
+export function registerStagingTool() {
+  globalRegistry.register({
+    name: "stage_aria_remediation",
+    title: "Stage ARIA Remediation",
+    description: "Proposes accessible attribute patches to a staged virtual DOM layer.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        selector: { type: "string" },
+        attributes: { type: "object" },
+        description: { type: "string" }
+      },
+      required: ["selector", "attributes", "description"],
+      additionalProperties: false
+    },
+    annotations: { readOnlyHint: false, untrustedContentHint: false },
+    execute: async (input: any, { signal }: { signal: AbortSignal }) => {
+      signal.throwIfAborted();
+      logTool('stage_aria_remediation', input);
+
+      const state = useA11yStore.getState();
+      if (state.epochConflict) {
+        return { success: false, errorCode: "EPOCH_CONFLICT", message: "Cannot stage patch while epoch conflict is unresolved. Call audit_accessibility_tree first to re-sync." };
+      }
+
+      const allowedKeyRegex = /^(aria-|role$|tabindex$)/;
+      const safeAttributes: Record<string, string> = {};
+      
+      for (const [key, value] of Object.entries(input.attributes || {})) {
+        if (allowedKeyRegex.test(key)) {
+          safeAttributes[key] = String(value);
+        } else {
+          console.warn(`Blocked unsafe attribute injection attempt: ${key}`);
+        }
+      }
+
+      const patchId = Math.random().toString(36).substring(7);
+      state.stagePatch({
+        id: patchId,
+        selector: input.selector,
+        attributes: safeAttributes,
+        description: input.description
+      });
+      
+      // CAPABILITY FSM: Abort diagnostic tools to enforce sequential workflow
+      globalRegistry.unregister("audit_accessibility_tree");
+      globalRegistry.unregister("trace_keyboard_trap");
+      globalRegistry.unregister("check_contrast_ratios");
+      
+      return { success: true, patchId, currentEpoch: getEpoch() };
+    }
+  });
+}
+
+export function registerCoreTools() {
+  registerDiagnosticTools();
+  registerStagingTool();
+}
+
 export function mountEphemeralCommitTool(patchId: string) {
   const expectedEpoch = useA11yStore.getState().currentEpoch;
   globalRegistry.registerEphemeral({
@@ -147,20 +166,23 @@ export function mountEphemeralCommitTool(patchId: string) {
       state.setCommitUnmounted();
       
       if (state.currentEpoch !== input.expectedEpoch || state.currentEpoch !== expectedEpoch) {
+        state.setEpochConflict(true);
+        state.clearStagedPatch();
+        registerDiagnosticTools(); // Remount diagnostic tools since patch is cleared
         return { 
           success: false, 
           errorCode: "STALE_EPOCH_CONFLICT",
-          message: "Human modified the DOM during evaluation. Re-run audit."
+          message: "Human modified the DOM during evaluation. Epoch mismatch. Re-run audit."
         };
       }
       if (input.patchId !== patchId) {
          return { success: false, message: "Invalid patch ID" };
       }
       
-      // Apply patch logic here...
       state.commitPatch();
       state.incrementEpoch();
       state.setHighlight(null);
+      registerDiagnosticTools(); // Remount diagnostic tools post-commit
       
       return { success: true, newEpoch: state.currentEpoch };
     }

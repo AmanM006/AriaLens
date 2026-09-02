@@ -103,30 +103,55 @@ export class A11yEngine {
     const el = document.querySelector(selector) as HTMLElement;
     if (!el) throw new Error(`Element "${selector}" not found.`);
 
-    const style = window.getComputedStyle(el);
-    const fgColor = style.color;
-    let bgColor = style.backgroundColor;
+    const fgStyle = window.getComputedStyle(el);
+    const fgColor = fgStyle.color;
     
-    // Traverse parent tree to find actual background color if transparent
+    // Recursive alpha blending up the parent stack to <html>
+    const parseRgba = (colorStr: string) => {
+      const m = colorStr.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+      if (!m) return { r: 0, g: 0, b: 0, a: 0 };
+      return { r: Number(m[1]), g: Number(m[2]), b: Number(m[3]), a: m[4] ? Number(m[4]) : 1 };
+    };
+
     let currentEl: HTMLElement | null = el;
-    while (currentEl && (bgColor === 'rgba(0, 0, 0, 0)' || bgColor === 'transparent')) {
-      currentEl = currentEl.parentElement;
-      if (currentEl) {
-        bgColor = window.getComputedStyle(currentEl).backgroundColor;
-      } else {
-        bgColor = 'rgb(255, 255, 255)'; // Final fallback to white
+    let accumulatedBg = { r: 0, g: 0, b: 0, a: 0 };
+
+    while (currentEl && accumulatedBg.a < 1) {
+      const style = window.getComputedStyle(currentEl);
+      const bg = parseRgba(style.backgroundColor);
+      
+      if (bg.a > 0) {
+        // Porter-Duff source-over composite
+        const outA = bg.a + accumulatedBg.a * (1 - bg.a);
+        if (outA > 0) {
+          accumulatedBg.r = (bg.r * bg.a + accumulatedBg.r * accumulatedBg.a * (1 - bg.a)) / outA;
+          accumulatedBg.g = (bg.g * bg.a + accumulatedBg.g * accumulatedBg.a * (1 - bg.a)) / outA;
+          accumulatedBg.b = (bg.b * bg.a + accumulatedBg.b * accumulatedBg.a * (1 - bg.a)) / outA;
+        }
+        accumulatedBg.a = outA;
       }
+      currentEl = currentEl.parentElement;
     }
 
+    // Blend any remaining transparency against white root
+    if (accumulatedBg.a < 1) {
+      const whiteA = 1 - accumulatedBg.a;
+      accumulatedBg.r = accumulatedBg.r * accumulatedBg.a + 255 * whiteA;
+      accumulatedBg.g = accumulatedBg.g * accumulatedBg.a + 255 * whiteA;
+      accumulatedBg.b = accumulatedBg.b * accumulatedBg.a + 255 * whiteA;
+    }
+
+    const finalBgColor = `rgb(${Math.round(accumulatedBg.r)}, ${Math.round(accumulatedBg.g)}, ${Math.round(accumulatedBg.b)})`;
+
     const lum1 = this.getLuminance(fgColor);
-    const lum2 = this.getLuminance(bgColor);
+    const lum2 = this.getLuminance(finalBgColor);
     const ratio = (Math.max(lum1, lum2) + 0.05) / (Math.min(lum1, lum2) + 0.05);
 
     return {
       ratio: Number(ratio.toFixed(2)),
       passesAA: ratio >= 4.5,
       fgColor,
-      bgColor
+      bgColor: finalBgColor
     };
   }
 
