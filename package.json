@@ -7,10 +7,12 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "typecheck": "tsc --noEmit",
-    "preview": "vite preview", "test:eval": "node scripts/poison-test.js"
+    "preview": "vite preview",
+    "test:eval": "node scripts/poison-test.js"
   },
   "dependencies": {
     "axe-core": "^4.10.0",
+    "lucide-react": "^1.39.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "zustand": "^5.0.0"
