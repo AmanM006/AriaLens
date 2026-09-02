@@ -119,8 +119,7 @@ export const App: React.FC = () => {
             )}
             <Fixtures
               activeFixture={activeFixture as 'none' | 'modal' | 'combobox' | 'contrast'}
-              stagedAttributes={stagedPatch?.attributes}
-              stagedSelector={stagedPatch?.selector}
+              appliedPatches={useA11yStore.getState().appliedPatches}
             />
           </div>
         </div>
@@ -148,7 +147,7 @@ export const App: React.FC = () => {
                   <button
                     onClick={handleApprove}
                     disabled={isCommitMounted}
-                    className={`flex-1 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 ${
+                    className={`flex-1 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-900 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 ${
                       isCommitMounted
                         ? 'bg-emerald-950 text-emerald-300 border border-emerald-800 cursor-not-allowed'
                         : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow'
@@ -158,7 +157,7 @@ export const App: React.FC = () => {
                   </button>
                   <button
                     onClick={clearStagedPatch}
-                    className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs transition"
+                    className="px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-900 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs transition"
                   >
                     Reject
                   </button>

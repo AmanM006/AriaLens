@@ -81,11 +81,23 @@ export function registerCoreTools() {
     execute: async (input: any, { signal }: { signal: AbortSignal }) => {
       signal.throwIfAborted();
       logTool('stage_aria_remediation', input);
+
+      const allowedKeyRegex = /^(aria-|role$|tabindex$)/;
+      const safeAttributes: Record<string, string> = {};
+      
+      for (const [key, value] of Object.entries(input.attributes || {})) {
+        if (allowedKeyRegex.test(key)) {
+          safeAttributes[key] = String(value);
+        } else {
+          console.warn(`Blocked unsafe attribute injection attempt: ${key}`);
+        }
+      }
+
       const patchId = Math.random().toString(36).substring(7);
       useA11yStore.getState().stagePatch({
         id: patchId,
         selector: input.selector,
-        attributes: input.attributes,
+        attributes: safeAttributes,
         description: input.description
       });
       return { success: true, patchId, currentEpoch: getEpoch() };
@@ -146,8 +158,8 @@ export function mountEphemeralCommitTool(patchId: string) {
       }
       
       // Apply patch logic here...
+      state.commitPatch();
       state.incrementEpoch();
-      state.clearStagedPatch();
       state.setHighlight(null);
       
       return { success: true, newEpoch: state.currentEpoch };

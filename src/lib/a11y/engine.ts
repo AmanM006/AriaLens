@@ -51,23 +51,47 @@ export class A11yEngine {
    * Traces focusable elements to detect focus escape or lack of circular containment
    */
   static traceFocusTrap(containerSelector: string): { isTrapped: boolean; focusableCount: number; elements: string[]; leakDetected: boolean } {
-    const container = document.querySelector(containerSelector);
+    const container = document.querySelector(containerSelector) as HTMLElement;
     if (!container) {
       throw new Error(`Container "${containerSelector}" not found.`);
     }
 
-    const focusableSelectors = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
-    const containerFocusables = Array.from(container.querySelectorAll(focusableSelectors));
-    const allDocFocusables = Array.from(document.querySelectorAll(focusableSelectors));
+    const focusableSelectors = 'a[href], button, input, select, textarea, [tabindex]';
+    const allDocFocusables = Array.from(document.querySelectorAll(focusableSelectors)) as HTMLElement[];
 
-    // Check if background elements are focusable while container is active
-    const backgroundFocusables = allDocFocusables.filter(el => !container.contains(el));
-    const leakDetected = backgroundFocusables.some(el => !el.hasAttribute('inert') && el.getAttribute('tabindex') !== '-1');
+    let leakDetected = false;
+    const trulyFocusableContainerElements: HTMLElement[] = [];
+
+    // Real focus trace
+    const originalActive = document.activeElement as HTMLElement;
+
+    for (const el of allDocFocusables) {
+      // Skip obviously inert stuff or disabled elements
+      if (el.hasAttribute('disabled') || el.closest('[inert]')) continue;
+      
+      // Try to focus
+      el.focus({ preventScroll: true });
+      if (document.activeElement === el) {
+        if (container.contains(el)) {
+          trulyFocusableContainerElements.push(el);
+        } else {
+          // If we can focus something outside the container, it's a leak!
+          leakDetected = true;
+        }
+      }
+    }
+
+    // Restore original focus
+    if (originalActive) {
+      originalActive.focus({ preventScroll: true });
+    } else {
+      (document.activeElement as HTMLElement)?.blur();
+    }
 
     return {
-      isTrapped: !leakDetected && containerFocusables.length > 0,
-      focusableCount: containerFocusables.length,
-      elements: containerFocusables.map(el => `${el.tagName.toLowerCase()}${el.id ? '#' + el.id : ''}${el.className ? '.' + el.className.split(' ')[0] : ''}`),
+      isTrapped: !leakDetected && trulyFocusableContainerElements.length > 0,
+      focusableCount: trulyFocusableContainerElements.length,
+      elements: trulyFocusableContainerElements.map(el => `${el.tagName.toLowerCase()}${el.id ? '#' + el.id : ''}${el.className ? '.' + el.className.split(' ')[0] : ''}`),
       leakDetected
     };
   }
@@ -76,16 +100,22 @@ export class A11yEngine {
    * Computes WCAG relative luminance and contrast ratio
    */
   static getContrastRatio(selector: string): { ratio: number; passesAA: boolean; fgColor: string; bgColor: string } {
-    const el = document.querySelector(selector);
+    const el = document.querySelector(selector) as HTMLElement;
     if (!el) throw new Error(`Element "${selector}" not found.`);
 
     const style = window.getComputedStyle(el);
     const fgColor = style.color;
     let bgColor = style.backgroundColor;
-
-    // Fallback if background is transparent
-    if (bgColor === 'rgba(0, 0, 0, 0)' || bgColor === 'transparent') {
-      bgColor = 'rgb(255, 255, 255)';
+    
+    // Traverse parent tree to find actual background color if transparent
+    let currentEl: HTMLElement | null = el;
+    while (currentEl && (bgColor === 'rgba(0, 0, 0, 0)' || bgColor === 'transparent')) {
+      currentEl = currentEl.parentElement;
+      if (currentEl) {
+        bgColor = window.getComputedStyle(currentEl).backgroundColor;
+      } else {
+        bgColor = 'rgb(255, 255, 255)'; // Final fallback to white
+      }
     }
 
     const lum1 = this.getLuminance(fgColor);

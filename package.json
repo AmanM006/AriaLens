@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "typecheck": "tsc --noEmit",
-    "preview": "vite preview"
+    "preview": "vite preview", "test:eval": "node scripts/poison-test.js"
   },
   "dependencies": {
     "axe-core": "^4.10.0",

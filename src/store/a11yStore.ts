@@ -22,11 +22,13 @@ interface A11yState {
   highlightedSelector: string | null;
   activityLog: ActivityLogEntry[];
   isCommitMounted: boolean;
+  appliedPatches: Record<string, Record<string, string>>;
   
   loadFixture: (fixture: FixtureType) => void;
   incrementEpoch: () => void;
   stagePatch: (patch: StagedPatch) => void;
   clearStagedPatch: () => void;
+  commitPatch: () => void;
   setHighlight: (selector: string | null) => void;
   logActivity: (entry: Omit<ActivityLogEntry, 'timestamp'>) => void;
   approvePatch: () => void;
@@ -40,13 +42,15 @@ export const useA11yStore = create<A11yState>((set) => ({
   highlightedSelector: null,
   activityLog: [],
   isCommitMounted: false,
+  appliedPatches: {},
 
   loadFixture: (fixture) => set((state) => ({ 
     activeFixture: fixture, 
     currentEpoch: state.currentEpoch + 1,
     stagedPatch: null,
     highlightedSelector: null,
-    isCommitMounted: false
+    isCommitMounted: false,
+    appliedPatches: {}
   })),
   
   incrementEpoch: () => set((state) => ({ currentEpoch: state.currentEpoch + 1 })),
@@ -54,6 +58,21 @@ export const useA11yStore = create<A11yState>((set) => ({
   stagePatch: (patch) => set({ stagedPatch: patch, isCommitMounted: false }),
   
   clearStagedPatch: () => set({ stagedPatch: null, isCommitMounted: false }),
+
+  commitPatch: () => set((state) => {
+    if (!state.stagedPatch) return state;
+    return {
+      appliedPatches: {
+        ...state.appliedPatches,
+        [state.stagedPatch.selector]: {
+          ...(state.appliedPatches[state.stagedPatch.selector] || {}),
+          ...state.stagedPatch.attributes
+        }
+      },
+      stagedPatch: null,
+      isCommitMounted: false
+    };
+  }),
   
   setHighlight: (selector) => set({ highlightedSelector: selector }),
   

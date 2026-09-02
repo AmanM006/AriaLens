@@ -1,4 +1,4 @@
-# AriaLens ?????
+# AriaLens
 
 > **Agent-Native Live Accessibility & Screen-Reader Remediation Studio**  
 > *Built for The WebMCP Challenge (OpenAI x W3C WebMCP Hackathon)*
