@@ -1,6 +1,6 @@
-﻿# AriaLens
+# AriaLens
 
-> **Agent-Native Live Accessibility & Screen-Reader Remediation Studio**  
+> **The agent can see everything. It can touch nothing until you authorize.**  
 > *Built for The WebMCP Challenge (OpenAI x W3C WebMCP Hackathon)*
 
 [![WebMCP Draft Spec](https://img.shields.io/badge/WebMCP-W3C_Draft_Spec-blue.svg)](https://github.com/w3c/web-machine-learning)
@@ -14,7 +14,16 @@
 
 Server-side AI coding agents fail catastrophically at web accessibility. When inspecting static HTML/JSX ASTs, LLMs hallucinate ARIA tags, miscalculate contrast ratios across layered alpha-blended CSS backgrounds, and cannot verify whether a modal actually traps keyboard focus or leaks to background content.
 
-**AriaLens** is an agent-native accessibility and screen-reader remediation studio running **100% inside the browser runtime**. Powered by the emerging **W3C WebMCP draft standard** (`document.modelContext`), AriaLens equips AI agents with direct, real-time diagnostic tools to audit computed accessibility trees, walk live keyboard focus paths, measure rendered relative luminance, test acoustic screen-reader speech synthesis, and propose remediations through a strict **Human-in-the-Loop (HITL) Authority Boundary**.
+**AriaLens** is an agent-native accessibility and screen-reader remediation studio running **100% inside the browser runtime**. Powered by the emerging **W3C WebMCP draft standard**, AriaLens equips AI agents with direct, real-time diagnostic tools to audit computed accessibility trees, walk live keyboard focus paths, measure rendered relative luminance, test acoustic screen-reader speech synthesis, and propose remediations through a strict **Human-in-the-Loop (HITL) Authority Boundary**.
+
+---
+
+## Trust Boundary (What this does NOT claim)
+
+To be explicitly clear on the scope of this project for technical judges:
+1. **Not a general-purpose WCAG scanner:** AriaLens runs its engine across 4 specific targeted DOM fixtures to demonstrate WebMCP capabilities, not a production-scale site crawler.
+2. **Session-only state:** There is no backend persistence. The epoch locking and staged patches live entirely within the current WebMCP browser session.
+3. **No cryptographic guarantees:** The epoch lock relies on client-side state machine synchronization to prevent race conditions (TOCTOU), not cryptographic hashing. It assumes a trusted client, but strictly guards against agent hallucinations or out-of-order patches.
 
 ---
 
@@ -104,16 +113,27 @@ if (state.currentEpoch !== input.expectedEpoch) {
 
 ---
 
-## WebMCP Tool Catalog
+## Dynamic Capability Lifecycle
 
-| Tool Name | Type | Spec Annotations | Description |
-| :--- | :---: | :---: | :--- |
-| `audit_accessibility_tree` | Query | `readOnlyHint: true`<br>`untrustedContentHint: true` | Evaluates live computed accessibility tree, ARIA roles, and accessible names via axe-core. |
-| `trace_keyboard_trap` | Query | `readOnlyHint: true`<br>`untrustedContentHint: false` | Traces active tab traversal sequence to detect focus escapes or missing circular containment. |
-| `check_contrast_ratios` | Query | `readOnlyHint: true`<br>`untrustedContentHint: true` | Computes live WCAG 2.2 relative luminance contrast ratio against parent background stacks. |
-| `preview_screen_reader` | Query / Audio | `readOnlyHint: true`<br>`untrustedContentHint: true` | Speaks computed screen-reader text over native `window.speechSynthesis` for acoustic verification. |
-| `stage_aria_remediation` | Mutation (Stage) | `readOnlyHint: false`<br>`untrustedContentHint: false` | Proposes accessible attribute patches into a staged virtual DOM layer without modifying live state. |
-| `commit_a11y_fix` | Ephemeral (Commit) | `readOnlyHint: false`<br>`untrustedContentHint: false` | **Mounted ephemerally on human approval.** Applies staged patch to live DOM; validates epoch lock. |
+AriaLens leverages `AbortController` and `document.modelContext.ontoolchange` to actively mount and unmount tools depending on the exact stage of the remediation workflow. The agent's capability window shrinks and expands dynamically:
+
+| Phase | System State | Mounted Tools |
+| :--- | :--- | :--- |
+| **1. DISCOVERY** | Agent is investigating the live DOM. | `audit_accessibility_tree`, `trace_keyboard_trap`, `check_contrast_ratios`, `preview_screen_reader`, `stage_aria_remediation` |
+| **2. STAGING** | Agent has proposed a patch. Diagnostic tools are **aborted/unmounted** to prevent mid-flight side effects. | `stage_aria_remediation` |
+| **3. AUTHORIZATION** | Human reviews patch in UI. Clicks "Approve". | `stage_aria_remediation`, `commit_a11y_fix` (ephemeral) |
+| **4. EXECUTION** | Patch is committed, Epoch is bumped. State resets to Phase 1. | *Returns to Phase 1 tools* |
+
+### Capability Annotations
+
+All diagnostic tools reading user-generated DOM content explicitly declare:
+```typescript
+annotations: {
+  readOnlyHint: true,
+  untrustedContentHint: true
+}
+```
+This forces the agent runtime to treat retrieved values as untrusted strings, neutralizing indirect prompt injection attacks (demonstrable via our `sr-only` adversarial injection fixture).
 
 ---
 
