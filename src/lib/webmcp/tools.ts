@@ -149,7 +149,7 @@ export function registerCoreTools() {
 }
 
 export function mountEphemeralCommitTool(patchId: string) {
-  const expectedEpoch = useA11yStore.getState().currentEpoch;
+  const expectedEpoch = useA11yStore.getState().stagedPatch?.epoch ?? useA11yStore.getState().currentEpoch;
   globalRegistry.registerEphemeral({
     name: "commit_a11y_fix",
     title: "Commit Accessibility Fix",
