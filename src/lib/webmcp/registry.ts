@@ -14,7 +14,11 @@ export class ToolRegistry {
 
     const context = document.modelContext || navigator.modelContext;
     if (context) {
-      context.registerTool(tool, { signal: controller.signal });
+      try {
+        context.registerTool(tool, { signal: controller.signal });
+      } catch (err) {
+        console.error(`WebMCP registerTool error for "${tool.name}":`, err);
+      }
     } else {
       console.warn('WebMCP not supported in this browser.');
     }

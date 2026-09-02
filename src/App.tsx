@@ -19,27 +19,40 @@ export const App: React.FC = () => {
   const [toolCount, setToolCount] = useState(0);
 
   useEffect(() => {
-    // Initial registration of diagnostic and staging tools
-    registerCoreTools();
+    const initWebMCP = async () => {
+      if (!document.modelContext) return;
+      
+      try {
+        // 1. Register the tools
+        await registerCoreTools();
+        
+        // 2. Safely get the tool count
+        const updateToolCount = async () => {
+          try {
+            if (document.modelContext?.getTools) {
+              const tools = await document.modelContext.getTools();
+              setToolCount(tools.length);
+            } else {
+              setToolCount(5);
+            }
+          } catch (e) {
+            console.error("Failed to fetch tools:", e);
+          }
+        };
 
-    const updateToolCount = async () => {
-      if (document.modelContext) {
-        // We use our internal registry since modelContext doesn't have a standardized getTools() yet, 
-        // but for the sake of the demo, let's mock the tool count based on our active tools.
-        // The hackathon spec might have a getTools() method, so we'll leave it or mock it.
-        try {
-           const tools = await (document.modelContext as any).getTools?.() || [];
-           setToolCount(tools.length || 5);
-        } catch {
-           setToolCount(5); // 5 base tools registered
+        await updateToolCount();
+        
+        // 3. Listen for changes
+        if (document.modelContext) {
+          document.modelContext.ontoolchange = () => updateToolCount();
         }
+        
+      } catch (err) {
+        console.error("WebMCP Registration Error:", err);
       }
     };
 
-    updateToolCount();
-    if (document.modelContext) {
-      (document.modelContext as any).ontoolchange = () => updateToolCount();
-    }
+    initWebMCP();
   }, []);
 
   const handleApprove = () => {
