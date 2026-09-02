@@ -1,5 +1,24 @@
 import { create } from 'zustand';
 
+export interface ToolEvent {
+  id: string;
+  toolName: string;
+  input: any;
+  timestamp: number;
+  alert?: string;
+}
+
+// Global logger to bypass React lifecycle for WebMCP execution contexts
+export const logTool = (toolName: string, input: any, alert?: string) => {
+  useA11yStore.getState().addToolEvent({
+    id: Math.random().toString(36).substring(7),
+    toolName,
+    input,
+    timestamp: Date.now(),
+    alert
+  });
+};
+
 export interface StagedPatch {
   id: string;
   selector: string;

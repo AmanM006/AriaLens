@@ -311,13 +311,19 @@ export const App: React.FC = () => {
                     <div className="flex items-center justify-between text-zinc-400 mb-1">
                       <span className="text-indigo-400 font-bold text-[11px] flex items-center gap-1">
                         <ArrowRight className="w-2.5 h-2.5 text-indigo-500" />
-                        {log.toolName}
+                        {event.toolName}
                       </span>
-                      <span className="text-[10px] text-zinc-600">{new Date(log.timestamp).toLocaleTimeString()}</span>
+                      <span className="text-[10px] text-zinc-600">{new Date(event.timestamp).toLocaleTimeString()}</span>
                     </div>
-                    <div className="text-zinc-300 text-[10px] bg-black/40 px-2 py-1 rounded border border-white/5 truncate">
-                      {JSON.stringify(log.input)}
+                    <div className="text-zinc-400 font-mono text-[9px] mt-1 break-all bg-black/40 p-1.5 rounded border border-white/5">
+                      {JSON.stringify(event.input)}
                     </div>
+                    {event.alert && (
+                      <div className="mt-2 inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-rose-950/60 border border-rose-800/50 text-[9px] text-rose-400 font-bold uppercase tracking-wider">
+                        <AlertTriangle className="w-2.5 h-2.5" />
+                        {event.alert}
+                      </div>
+                    )}
                   </div>
                 ))
               )}
