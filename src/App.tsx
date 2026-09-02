@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useA11yStore } from './store/a11yStore';
-import { registerCoreTools, mountEphemeralCommitTool } from './lib/webmcp/tools';
+import { registerCoreTools, mountEphemeralCommitTool, registerDiagnosticTools } from './lib/webmcp/tools';
 import { Fixtures } from './components/Fixtures';
 import { 
   Radio, 
@@ -265,7 +265,10 @@ export const App: React.FC = () => {
                     {isCommitMounted ? 'Commit Tool Mounted (Waiting Agent)' : 'Approve & Mount Commit Tool'}
                   </button>
                   <button
-                    onClick={clearStagedPatch}
+                    onClick={() => {
+                      clearStagedPatch();
+                      registerDiagnosticTools();
+                    }}
                     className="px-3.5 py-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-white/10 rounded-xl text-xs font-semibold transition flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:ring-offset-2 focus:ring-offset-black"
                   >
                     <XCircle className="w-3.5 h-3.5 text-zinc-400" />

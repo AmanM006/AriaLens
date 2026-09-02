@@ -153,19 +153,26 @@ export const Fixtures: React.FC<FixturesProps> = ({ activeFixture, appliedPatche
       {/* FIXTURE 3: Low-Contrast Grid - 100% Dark Themed (No Blinding White!) */}
       {activeFixture === 'contrast' && (
         <div className="grid grid-cols-2 gap-4 w-full">
-          {/* Standard Tier: Low Contrast Fail AA (2.3:1 Ratio in dark theme) */}
-          <div className="bg-[#10131d] p-5 rounded-xl border border-white/10 shadow-lg flex flex-col justify-between">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Standard Tier</span>
-              <span className="text-[10px] text-rose-400 bg-rose-950/60 border border-rose-800/40 px-2 py-0.5 rounded font-mono font-bold">FAIL AA</span>
-            </div>
-            {/* Low contrast color #485060 on #10131d gives exactly 2.3:1 ratio */}
-            <p id="contrast-fail-text" className="text-[#485060] text-xs font-medium my-3 leading-relaxed" {...getDynamicProps('#contrast-fail-text')}>
-              High-frequency metrics analysis with basic trace sampling and uncompressed storage retention.
-            </p>
-            <div className="pt-3 border-t border-white/5 flex items-center justify-between text-[10px] font-mono text-zinc-500">
-              <span>Measured Ratio: <strong className="text-rose-400">2.3:1</strong></span>
-              <span>Req: 4.5:1</span>
+          {/* Standard Tier: Low Contrast Fail AA with Alpha Stack */}
+          <div className="bg-[#10131d] p-0.5 rounded-xl border border-white/10 shadow-lg flex flex-col justify-between overflow-hidden relative">
+            {/* Base layer */}
+            <div className="absolute inset-0 bg-indigo-900 z-0"></div>
+            {/* Semi-transparent stack layer 1 */}
+            <div className="absolute inset-0 bg-black/50 z-10"></div>
+            
+            {/* Top transparent content container */}
+            <div className="relative z-20 bg-white/10 p-5 flex flex-col h-full justify-between">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Standard Tier</span>
+                <span className="text-[10px] text-rose-400 bg-rose-950/60 border border-rose-800/40 px-2 py-0.5 rounded font-mono font-bold">FAIL AA</span>
+              </div>
+              <p id="contrast-fail-text" className="text-[#8892b0] text-xs font-medium my-3 leading-relaxed" {...getDynamicProps('#contrast-fail-text')}>
+                High-frequency metrics analysis with basic trace sampling and uncompressed storage retention.
+              </p>
+              <div className="pt-3 border-t border-white/5 flex items-center justify-between text-[10px] font-mono text-zinc-300">
+                <span>Measured Ratio: <strong className="text-rose-400">~2.8:1</strong></span>
+                <span>Req: 4.5:1</span>
+              </div>
             </div>
           </div>
 

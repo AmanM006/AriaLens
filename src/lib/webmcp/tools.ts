@@ -136,6 +136,7 @@ export function registerStagingTool() {
       globalRegistry.unregister("audit_accessibility_tree");
       globalRegistry.unregister("trace_keyboard_trap");
       globalRegistry.unregister("check_contrast_ratios");
+      globalRegistry.unregister("preview_screen_reader");
       
       return { success: true, patchId, currentEpoch: getEpoch() };
     }
