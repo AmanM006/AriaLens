@@ -39,6 +39,30 @@ Remote backend MCP servers structurally **cannot** perform high-consequence acce
 
 ---
 
+## WebMCP Implementation (`registerTool` Requirement)
+
+AriaLens strictly adheres to the W3C WebMCP integration pattern. Tools are registered dynamically via `document.modelContext.registerTool`, exposing their schemas and execution handlers to the agent environment. Here is a structural example of how our diagnostic tools are implemented:
+
+```javascript
+document.modelContext.registerTool({
+  name: "audit_accessibility_tree",
+  title: "Audit Accessibility Tree",
+  description: "Runs axe-core against the live DOM element to find WCAG 2.2 violations.",
+  inputSchema: {
+    type: "object",
+    properties: { selector: { type: "string" } },
+    additionalProperties: false
+  },
+  annotations: { readOnlyHint: true, untrustedContentHint: true },
+  execute: async (input, options) => {
+    options?.signal?.throwIfAborted();
+    return await A11yEngine.auditSubtree(input.selector, options?.signal);
+  }
+});
+```
+
+---
+
 ## Spec-Native Security & Architecture
 
 AriaLens implements the deepest edges of the **W3C WebMCP draft specification**, specifically addressing the security and lifecycle vectors outlined in **Section 6**:
