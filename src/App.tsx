@@ -90,6 +90,34 @@ export const App: React.FC = () => {
     setTimeout(() => setCopiedPatch(false), 2000);
   };
 
+  const generateGitPatch = () => {
+    if (!stagedPatch) return;
+    const date = new Date().toUTCString();
+    let patchContent = `From: AriaLens WebMCP Agent <agent@webmcp.local>
+Date: ${date}
+Subject: [PATCH] fix(a11y): remediate ${stagedPatch.selector} accessibility violations
+
+---
+ a/src/components/Fixtures.tsx
+ b/src/components/Fixtures.tsx
+@@ -1,5 +1,10 @@
+- <div id="${stagedPatch.selector.replace('#', '')}">
+`;
+    Object.entries(stagedPatch.attributes).forEach(([k, v]) => {
+      patchContent += `+ <div ${k}="${v}">\n`;
+    });
+    
+    const blob = new Blob([patchContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `remediation-${stagedPatch.id}.patch`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   // Manual Trigger: Simulate full agent audit + patch staging flow for visual preview
   const handleSimulateAgentRun = () => {
     const selector = targetSelectorDisplay;
@@ -440,6 +468,14 @@ export const App: React.FC = () => {
                       </span>
                       <div className="flex items-center gap-2">
                         <span className="text-zinc-500">Epoch #{currentEpoch}</span>
+                        <button
+                          onClick={generateGitPatch}
+                          title="Download as Git Patch"
+                          className="flex items-center gap-1.5 px-2 py-0.5 bg-[#12141c] hover:bg-[#1a1d27] border border-white/10 rounded-md text-[10px] text-zinc-300 hover:text-white transition shadow-sm"
+                        >
+                          <Download className="w-2.5 h-2.5 text-indigo-400" />
+                          .patch
+                        </button>
                         <button 
                           onClick={handleCopyPatch}
                           title="Copy patch JSON"
