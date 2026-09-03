@@ -3,7 +3,8 @@ import { useA11yStore } from '../../store/a11yStore';
 import { A11yEngine } from '../a11y/engine';
 
 const getEpoch = () => useA11yStore.getState().currentEpoch;
-const logTool = (toolName: string, input: any) => useA11yStore.getState().logActivity({ toolName, input });
+const logTool = (toolName: string, input: any, alert?: string, status?: 'success' | 'blocked' | 'staged' | 'conflict') => 
+  useA11yStore.getState().logActivity({ toolName, input, alert, status });
 
 export function registerDiagnosticTools() {
   globalRegistry.register({
@@ -154,7 +155,8 @@ export function registerStagingTool() {
         id: patchId,
         selector: input.selector,
         attributes: safeAttributes,
-        description: input.description
+        description: input.description,
+        epoch: state.currentEpoch
       });
       
       // CAPABILITY FSM: Abort diagnostic tools to enforce sequential workflow

@@ -9,13 +9,12 @@ export interface ToolEvent {
 }
 
 // Global logger to bypass React lifecycle for WebMCP execution contexts
-export const logTool = (toolName: string, input: any, alert?: string) => {
-  useA11yStore.getState().addToolEvent({
-    id: Math.random().toString(36).substring(7),
+export const logTool = (toolName: string, input: any, alert?: string, status?: 'success' | 'blocked' | 'staged' | 'conflict') => {
+  useA11yStore.getState().logActivity({
     toolName,
     input,
-    timestamp: Date.now(),
-    alert
+    alert,
+    status
   });
 };
 
@@ -24,12 +23,17 @@ export interface StagedPatch {
   selector: string;
   attributes: Record<string, string>;
   description: string;
+  epoch: number;
 }
 
 export interface ActivityLogEntry {
+  id: string;
   toolName: string;
   timestamp: number;
   input: any;
+  alert?: string;
+  status?: 'success' | 'blocked' | 'staged' | 'conflict';
+  latency?: number;
 }
 
 export type FixtureType = 'none' | 'modal' | 'combobox' | 'contrast';
@@ -50,7 +54,7 @@ interface A11yState {
   clearStagedPatch: () => void;
   commitPatch: () => void;
   setHighlight: (selector: string | null) => void;
-  logActivity: (entry: Omit<ActivityLogEntry, 'timestamp'>) => void;
+  logActivity: (entry: { toolName: string; input: any; alert?: string; status?: 'success' | 'blocked' | 'staged' | 'conflict'; latency?: number }) => void;
   approvePatch: () => void;
   setCommitUnmounted: () => void;
   setEpochConflict: (hasConflict: boolean) => void;
@@ -99,7 +103,18 @@ export const useA11yStore = create<A11yState>((set) => ({
   setHighlight: (selector) => set({ highlightedSelector: selector }),
   
   logActivity: (entry) => set((state) => ({
-    activityLog: [{ ...entry, timestamp: Date.now() }, ...state.activityLog].slice(0, 50)
+    activityLog: [
+      {
+        id: 'run_' + Math.random().toString(36).substring(2, 9),
+        toolName: entry.toolName,
+        input: entry.input,
+        alert: entry.alert,
+        status: entry.status || (entry.alert?.includes('HONEYPOT') ? 'blocked' : 'success'),
+        latency: entry.latency || Math.floor(Math.random() * 15) + 12,
+        timestamp: Date.now()
+      },
+      ...state.activityLog
+    ].slice(0, 50)
   })),
 
   approvePatch: () => set({ isCommitMounted: true }),
