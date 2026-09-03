@@ -16,7 +16,6 @@ import {
   Lock, 
   Code2, 
   AlertTriangle, 
-  Zap, 
   Search, 
   Download, 
   Check,
@@ -190,14 +189,13 @@ export const App: React.FC = () => {
             <span className="text-indigo-300 font-bold">{toolCount}</span>
           </div>
 
-          {/* Debug Bump Epoch Button */}
+          {/* Bump Epoch Button */}
           <button
             onClick={() => incrementEpoch()}
-            className="px-2.5 py-1 rounded-md bg-indigo-600/90 hover:bg-indigo-600 text-white text-[11px] font-semibold shadow-sm transition flex items-center gap-1 focus:outline-none"
-            title="Increment epoch to simulate concurrent human edit"
+            className="px-2.5 py-1 rounded-md bg-[#14161f] hover:bg-[#1c1f2b] text-zinc-300 hover:text-white border border-white/[0.08] text-[11px] font-mono transition focus:outline-none"
+            title="Simulate concurrent human edit (increments epoch counter)"
           >
-            <Zap className="w-3 h-3 text-indigo-200" />
-            Bump Epoch
+            Bump Epoch +1
           </button>
         </div>
       </header>
