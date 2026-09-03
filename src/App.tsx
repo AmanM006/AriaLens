@@ -21,8 +21,7 @@ import {
   Check, 
   Copy,
   Info,
-  Shield,
-  Play
+  Shield
 } from 'lucide-react';
 
 export const App: React.FC = () => {
