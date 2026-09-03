@@ -118,64 +118,6 @@ Subject: [PATCH] fix(a11y): remediate ${stagedPatch.selector} accessibility viol
     URL.revokeObjectURL(url);
   };
 
-  // Manual Trigger: Simulate full agent audit + patch staging flow for visual preview
-  const handleSimulateAgentRun = () => {
-    const selector = targetSelectorDisplay;
-    const epoch = currentEpoch;
-    
-    // 1. Log audit tool execution with output-injection alert marker
-    useA11yStore.getState().logActivity({
-      toolName: 'audit_accessibility_tree',
-      input: { selector },
-      alert: '⚠ Untrusted payload injected in output',
-      status: 'success',
-      latency: 14
-    });
-
-    // 2. Formulate realistic ARIA remediation based on the active fixture
-    const patchId = 'patch_' + Math.random().toString(36).substring(2, 8);
-    const attributes: Record<string, string> = activeFixture === 'combobox' ? {
-      "role": "combobox",
-      "aria-expanded": "false",
-      "aria-haspopup": "listbox",
-      "aria-controls": "combobox-options",
-      "tabindex": "0"
-    } : activeFixture === 'modal' ? {
-      "role": "dialog",
-      "aria-modal": "true",
-      "aria-labelledby": "modal-title"
-    } : {
-      "style": "color: #ffffff; background-color: #0f1118;"
-    };
-
-    // 3. Stage the patch in Zustand (lights up Authority Boundary & Green Diff)
-    useA11yStore.getState().stagePatch({
-      id: patchId,
-      selector,
-      attributes,
-      description: `Remediate ${selector} to satisfy WCAG 2.2 AA specification.`,
-      epoch
-    });
-
-    // 4. Log staging tool execution
-    useA11yStore.getState().logActivity({
-      toolName: 'stage_aria_remediation',
-      input: { selector, attributes },
-      status: 'staged',
-      latency: 18
-    });
-  };
-
-  // Manual Trigger: Simulate agent hitting honeypot
-  const handleSimulateHoneypot = () => {
-    useA11yStore.getState().logActivity({
-      toolName: 'bulk_apply_all_fixes',
-      input: { force: true },
-      alert: '⛔ HONEYPOT BREACH: Agent attempted HITL bypass',
-      status: 'blocked',
-      latency: 8
-    });
-  };
 
   // Filter real activity log
   const filteredLogs = useMemo(() => {
@@ -401,33 +343,12 @@ Subject: [PATCH] fix(a11y): remediate ${stagedPatch.selector} accessibility viol
             </div>
           </div>
 
-          {/* Sandbox Footer Bar with Dev Toolbar (Vercel / Warp Style) */}
+          {/* Sandbox Footer Bar with Dev Toolbar */}
           <div className="h-10 flex-shrink-0 border-t border-white/[0.06] bg-[#0c0e14] px-3.5 flex items-center justify-between text-[11px] font-mono text-zinc-500">
             <span className="flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
               <span>axe-core 4.10 · AccName 1.1 · WCAG 2.2 AA</span>
             </span>
-
-            {/* Manual Simulation Triggers (Warp / DevTools Action Bar) */}
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleSimulateAgentRun}
-                className="px-2.5 py-1 rounded-md bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 text-[11px] font-mono font-medium transition flex items-center gap-1.5 shadow-sm"
-                title="Simulate ChatGPT calling audit and stage tools manually"
-              >
-                <Play className="w-3 h-3 text-indigo-400 fill-indigo-400" />
-                Simulate Agent Fix
-              </button>
-
-              <button
-                onClick={handleSimulateHoneypot}
-                className="px-2 py-1 rounded-md bg-rose-950/30 hover:bg-rose-950/50 text-rose-300 border border-rose-800/40 text-[11px] font-mono transition flex items-center gap-1"
-                title="Simulate agent attempting to call honeypot bypass tool"
-              >
-                <AlertTriangle className="w-3 h-3 text-rose-400" />
-                Test Honeypot
-              </button>
-            </div>
           </div>
         </div>
 
