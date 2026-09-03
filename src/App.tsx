@@ -79,6 +79,14 @@ export const App: React.FC = () => {
 
   const handleApprove = () => {
     if (!stagedPatch) return;
+    
+    // DEMO FAST-PATH: Instantly trigger conflict banner if epoch was bumped
+    // (saves 30 seconds of LLM prompting during the video)
+    if (currentEpoch !== stagedPatch.epoch) {
+      useA11yStore.getState().setEpochConflict(true);
+      return;
+    }
+
     approvePatch();
     mountEphemeralCommitTool(stagedPatch.id);
   };
